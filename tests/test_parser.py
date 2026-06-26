@@ -15,14 +15,14 @@ VALID_ATOM_FEED = """<?xml version="1.0" encoding="UTF-8"?>
   <title>NZ Alerts — Auckland</title>
   <entry>
     <title>Severe Wind Warning</title>
-    <id>tag:nzalerts.co.nz,2024:00123456</id>
+    <id>tag:alerts.sshadmin.dev,2024:00123456</id>
     <updated>2024-06-26T10:00:00Z</updated>
     <published>2024-06-26T10:00:00Z</published>
     <author><name>MetService</name></author>
     <category term="Met"/>
     <summary>Strong northerly winds expected across Auckland region.</summary>
     <link rel="related" type="application/cap+xml"
-          href="https://nzalerts.co.nz/cap/alerts/123456"/>
+          href="https://alerts.sshadmin.dev/cap/alerts/123456"/>
   </entry>
 </feed>"""
 
@@ -61,7 +61,7 @@ ATOM_FEED_MISSING_ID = """<?xml version="1.0" encoding="UTF-8"?>
 ATOM_FEED_MISSING_ISSUED = """<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <entry>
-    <id>tag:nzalerts.co.nz,2024:99999</id>
+    <id>tag:alerts.sshadmin.dev,2024:99999</id>
     <title>Bad Entry</title>
   </entry>
 </feed>"""
@@ -114,10 +114,10 @@ MALFORMED_XML = "this is not xml <<<"
 
 _DUMMY_ENTRY = AtomEntry(
     alert_id="00123456",
-    raw_id="tag:nzalerts.co.nz,2024:00123456",
+    raw_id="tag:alerts.sshadmin.dev,2024:00123456",
     headline="Severe Wind Warning",
     issued="2024-06-26T10:00:00Z",
-    cap_url="https://nzalerts.co.nz/cap/alerts/123456",
+    cap_url="https://alerts.sshadmin.dev/cap/alerts/123456",
     source="MetService",
     category="Met",
     summary="Strong northerly winds expected.",
@@ -135,7 +135,7 @@ class TestParseAtomFeed:
         assert e.source == "MetService"
         assert e.category == "Met"
         assert e.summary == "Strong northerly winds expected across Auckland region."
-        assert e.cap_url == "https://nzalerts.co.nz/cap/alerts/123456"
+        assert e.cap_url == "https://alerts.sshadmin.dev/cap/alerts/123456"
 
     def test_stable_id_from_tag_uri(self):
         entries = parse_atom_feed(VALID_ATOM_FEED, "test")
@@ -246,4 +246,4 @@ class TestParseCAPDocument:
         assert alert.issued == "2024-06-26T10:00:00Z"
         assert alert.source == "MetService"
         assert alert.category == "Met"
-        assert alert.cap_url == "https://nzalerts.co.nz/cap/alerts/123456"
+        assert alert.cap_url == "https://alerts.sshadmin.dev/cap/alerts/123456"

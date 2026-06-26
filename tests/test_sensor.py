@@ -46,7 +46,7 @@ def _make_alert(
         description=description,
         instructions=None,
         geometry_polygon=None,
-        cap_url="https://nzalerts.co.nz/cap/alerts/1",
+        cap_url="https://alerts.sshadmin.dev/cap/alerts/1",
         source="MetService",
         category="Met",
     )
@@ -171,7 +171,7 @@ class TestCAPAlertSensorProperties:
         assert attrs["urgency"] == "expected"
         assert attrs["certainty"] == "likely"
         assert attrs["area"] == "Auckland"
-        assert attrs["cap_url"] == "https://nzalerts.co.nz/cap/alerts/1"
+        assert attrs["cap_url"] == "https://alerts.sshadmin.dev/cap/alerts/1"
         assert attrs["source"] == "MetService"
         assert attrs["feed_name"] == "feed_a"
 

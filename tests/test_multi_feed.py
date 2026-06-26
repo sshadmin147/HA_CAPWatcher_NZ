@@ -36,11 +36,11 @@ ATOM_AUCKLAND = """<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <entry>
     <title>Auckland Severe Wind</title>
-    <id>tag:nzalerts.co.nz,2024:1001</id>
+    <id>tag:alerts.sshadmin.dev,2024:1001</id>
     <updated>2024-06-26T10:00:00Z</updated>
     <author><name>MetService</name></author>
     <link rel="related" type="application/cap+xml"
-          href="https://nzalerts.co.nz/cap/alerts/1001"/>
+          href="https://alerts.sshadmin.dev/cap/alerts/1001"/>
   </entry>
 </feed>"""
 
@@ -48,11 +48,11 @@ ATOM_WELLINGTON = """<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <entry>
     <title>Wellington Extreme Warning</title>
-    <id>tag:nzalerts.co.nz,2024:2001</id>
+    <id>tag:alerts.sshadmin.dev,2024:2001</id>
     <updated>2024-06-26T11:00:00Z</updated>
     <author><name>MetService</name></author>
     <link rel="related" type="application/cap+xml"
-          href="https://nzalerts.co.nz/cap/alerts/2001"/>
+          href="https://alerts.sshadmin.dev/cap/alerts/2001"/>
   </entry>
 </feed>"""
 

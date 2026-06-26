@@ -22,7 +22,7 @@ from custom_components.ha_capwatcher.feeds_loader import (
 
 def _feed(
     name: str = "my_feed",
-    url: str = "https://nzalerts.co.nz/cap/feeds/official/all-nz",
+    url: str = "https://alerts.sshadmin.dev/cap/feeds/official/all-nz",
     enabled: bool = True,
     **extra,
 ) -> dict:
@@ -166,7 +166,7 @@ class TestValidateFeed:
         assert validate_feed(_feed(url="http://example.com/feed")) == []
 
     def test_https_url_accepted(self):
-        assert validate_feed(_feed(url="https://nzalerts.co.nz/cap/feeds/official/all-nz")) == []
+        assert validate_feed(_feed(url="https://alerts.sshadmin.dev/cap/feeds/official/all-nz")) == []
 
     def test_missing_enabled(self):
         feed = {"name": "my_feed", "url": "https://example.com/feed"}

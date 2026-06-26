@@ -211,7 +211,7 @@ def _stable_id(raw_id: str) -> str:
     """
     Derive a stable short ID from a CAP alert's tag URI.
 
-    CAP tag URIs look like: tag:nzalerts.co.nz,2024:123456
+    CAP tag URIs look like: tag:alerts.sshadmin.dev,2024:123456
     We extract the trailing numeric component as the stable ID.
     If extraction fails, derive a deterministic ID from the full URI.
     """

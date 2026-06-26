@@ -16,7 +16,7 @@ Prerequisites:
   - HA 2024.1+ running locally or in a dev container
   - custom_components/ha_capwatcher/ copied into config/custom_components/
   - HA restarted after copy
-  - Network access to https://nzalerts.co.nz from the HA host
+  - Network access to https://alerts.sshadmin.dev from the HA host
 """
 
 import pytest
@@ -200,7 +200,7 @@ class TestErrorHandling:
     @MANUAL_QA
     def test_feed_goes_offline_gracefully(self):
         """
-        Temporarily block network access to nzalerts.co.nz (e.g. via /etc/hosts).
+        Temporarily block network access to alerts.sshadmin.dev (e.g. via /etc/hosts).
         After MAX_RETRY_ATTEMPTS (5) failed polls, existing alert sensors should
         become 'unavailable' (coordinator offline).
         Restore network access — coordinator should auto-recover on next poll.

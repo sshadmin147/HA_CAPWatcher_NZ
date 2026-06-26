@@ -22,19 +22,19 @@ ATOM_TWO_ALERTS = """<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <entry>
     <title>Severe Wind Warning</title>
-    <id>tag:nzalerts.co.nz,2024:00000001</id>
+    <id>tag:alerts.sshadmin.dev,2024:00000001</id>
     <updated>2024-06-26T10:00:00Z</updated>
     <author><name>MetService</name></author>
     <link rel="related" type="application/cap+xml"
-          href="https://nzalerts.co.nz/cap/alerts/1"/>
+          href="https://alerts.sshadmin.dev/cap/alerts/1"/>
   </entry>
   <entry>
     <title>Heavy Rain Watch</title>
-    <id>tag:nzalerts.co.nz,2024:00000002</id>
+    <id>tag:alerts.sshadmin.dev,2024:00000002</id>
     <updated>2024-06-26T10:00:00Z</updated>
     <author><name>MetService</name></author>
     <link rel="related" type="application/cap+xml"
-          href="https://nzalerts.co.nz/cap/alerts/2"/>
+          href="https://alerts.sshadmin.dev/cap/alerts/2"/>
   </entry>
 </feed>"""
 
@@ -42,11 +42,11 @@ ATOM_ONE_ALERT = """<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <entry>
     <title>Severe Wind Warning</title>
-    <id>tag:nzalerts.co.nz,2024:00000001</id>
+    <id>tag:alerts.sshadmin.dev,2024:00000001</id>
     <updated>2024-06-26T10:00:00Z</updated>
     <author><name>MetService</name></author>
     <link rel="related" type="application/cap+xml"
-          href="https://nzalerts.co.nz/cap/alerts/1"/>
+          href="https://alerts.sshadmin.dev/cap/alerts/1"/>
   </entry>
 </feed>"""
 
@@ -117,7 +117,7 @@ def _make_coordinator(hass_mock, responses: list[tuple[str, int]]) -> CAPFeedCoo
     return CAPFeedCoordinator(
         hass=hass_mock,
         feed_name="test_feed",
-        feed_url="https://nzalerts.co.nz/cap/feeds/official/all-nz",
+        feed_url="https://alerts.sshadmin.dev/cap/feeds/official/all-nz",
         poll_interval=60,
         session=session,
         rate_queue=rate_queue,
@@ -327,7 +327,7 @@ class TestCAPFeedCoordinator:
 <feed xmlns="http://www.w3.org/2005/Atom">
   <entry>
     <title>Alert Without CAP Link</title>
-    <id>tag:nzalerts.co.nz,2024:99999</id>
+    <id>tag:alerts.sshadmin.dev,2024:99999</id>
     <updated>2024-06-26T10:00:00Z</updated>
   </entry>
 </feed>"""
