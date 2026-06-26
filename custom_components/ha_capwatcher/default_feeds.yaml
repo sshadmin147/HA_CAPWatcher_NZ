@@ -1,0 +1,134 @@
+# HA-CAPWatcher — Default NZAlerts CAP Feed Definitions
+#
+# Source: https://nzalerts.co.nz
+# Rate limit: 20 requests/minute per IP (server-side cache: 60s)
+#
+# Each feed has:
+#   name:    unique snake_case identifier (used in entity IDs)
+#   label:   human-readable name shown in the UI
+#   url:     full Atom feed URL
+#   enabled: true = polled on startup; false = available but inactive
+#
+# To add a regional feed, copy any region entry below, change 'name' and
+# replace the region slug in the URL. Valid region slugs:
+#   northland, auckland, waikato, bay_of_plenty, gisborne, hawkes_bay,
+#   taranaki, manawatu_whanganui, wellington, nelson_tasman, marlborough,
+#   west_coast, canterbury, otago, southland
+#
+# WARNING: Enabling many feeds simultaneously may approach the rate limit.
+# The integration serialises all requests, but keep enabled feeds to a
+# sensible number (≤5 recommended at the default 1-minute poll interval).
+
+feeds:
+
+  # =========================================================================
+  # National feeds — cover all of New Zealand
+  # =========================================================================
+
+  - name: official_all_nz
+    label: "Official NZ — All New Zealand"
+    url: "https://nzalerts.co.nz/cap/feeds/official/all-nz"
+    enabled: true
+    # MetService weather warnings + NEMA civil defence. Up to 100 alerts
+    # ordered by severity (Extreme first). No earthquakes.
+
+  - name: official_all_nz_with_earthquakes
+    label: "Official NZ + Earthquakes — All New Zealand"
+    url: "https://nzalerts.co.nz/cap/feeds/official-plus-earthquakes/all-nz"
+    enabled: false
+    # Same as above, plus GeoNet earthquakes M4.5 and above.
+    # Enable this instead of official_all_nz if you want earthquake alerts.
+
+  - name: auckland_enhanced_with_earthquakes
+    label: "Auckland Enhanced — With Earthquakes"
+    url: "https://nzalerts.co.nz/cap/feeds/auckland-enhanced/with-earthquakes"
+    enabled: false
+    # MetService + NEMA + Auckland Emergency Management (AEM) + GeoNet M4.5+.
+    # Only feed that includes AEM alerts. Auckland region only.
+
+  - name: auckland_enhanced_no_earthquakes
+    label: "Auckland Enhanced — No Earthquakes"
+    url: "https://nzalerts.co.nz/cap/feeds/auckland-enhanced/no-earthquakes"
+    enabled: false
+    # MetService + NEMA + AEM, no earthquakes. Auckland region only.
+
+  # =========================================================================
+  # Regional feeds — Official (weather + civil defence, no earthquakes)
+  # Enable the region(s) relevant to you. Keep national feeds disabled if
+  # you enable regional ones to avoid duplicate entities.
+  # =========================================================================
+
+  - name: region_northland
+    label: "Official — Northland"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/northland"
+    enabled: false
+
+  - name: region_auckland
+    label: "Official — Auckland"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/auckland"
+    enabled: false
+
+  - name: region_waikato
+    label: "Official — Waikato"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/waikato"
+    enabled: false
+
+  - name: region_bay_of_plenty
+    label: "Official — Bay of Plenty"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/bay_of_plenty"
+    enabled: false
+
+  - name: region_gisborne
+    label: "Official — Gisborne / Tairāwhiti"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/gisborne"
+    enabled: false
+
+  - name: region_hawkes_bay
+    label: "Official — Hawke's Bay"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/hawkes_bay"
+    enabled: false
+
+  - name: region_taranaki
+    label: "Official — Taranaki"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/taranaki"
+    enabled: false
+
+  - name: region_manawatu_whanganui
+    label: "Official — Manawatū-Whanganui"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/manawatu_whanganui"
+    enabled: false
+
+  - name: region_wellington
+    label: "Official — Wellington"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/wellington"
+    enabled: false
+
+  - name: region_nelson_tasman
+    label: "Official — Nelson / Tasman"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/nelson_tasman"
+    enabled: false
+
+  - name: region_marlborough
+    label: "Official — Marlborough"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/marlborough"
+    enabled: false
+
+  - name: region_west_coast
+    label: "Official — West Coast"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/west_coast"
+    enabled: false
+
+  - name: region_canterbury
+    label: "Official — Canterbury"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/canterbury"
+    enabled: false
+
+  - name: region_otago
+    label: "Official — Otago"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/otago"
+    enabled: false
+
+  - name: region_southland
+    label: "Official — Southland"
+    url: "https://nzalerts.co.nz/cap/feeds/official/regions/southland"
+    enabled: false
