@@ -19,7 +19,7 @@ The **Common Alerting Protocol** is an international standard for distributing e
 - **Multi-region** — monitor your home, family members in different regions, or the whole country at once
 - **Color-coded severity** — Extreme (red) → Severe → Warning → Watch → Info
 - **Live updates** — configurable refresh rate (15 seconds to 5 minutes)
-- **Built-in card** — custom HA-CAPWatcher Lovelace card showing alert details, description, and affected areas
+- **Custom card** — HA-CAPWatcher Lovelace card coming in Stage 2
 
 ### Automation Support
 - Trigger automations when alerts appear (`severity: "extreme"`)
@@ -130,11 +130,11 @@ automation:
 
 ### Helper Sensors
 
-For each feed, helper entities expose aggregated state:
+Three aggregate entities are created per config entry, spanning all configured feeds:
 
-- `template.cap_alerts_[feed]_count` — "0", "1", "3" (number of active alerts)
-- `template.cap_alerts_[feed]_highest_severity` — "extreme", "severe", "warning", "watch", "info", "none"
-- `template.cap_alerts_[feed]_latest_headline` — most recently issued alert headline
+- `sensor.ha_capwatcher_<entry>_alert_count` — number of active alerts (e.g. `3`)
+- `sensor.ha_capwatcher_<entry>_highest_severity` — worst severity across all feeds (`extreme` / `severe` / `warning` / `watch` / `info` / `none`)
+- `sensor.ha_capwatcher_<entry>_latest_headline` — headline of the highest-priority active alert
 
 Use these in automations or dashboard templates.
 
@@ -142,8 +142,9 @@ Use these in automations or dashboard templates.
 
 Each alert entity contains:
 
-- **state**: Alert headline (e.g., "Severe Wind Warning")
-- **severity**: NZ-CAP standard severity (extreme, severe, warning, watch, info)
+- **state**: NZ-CAP severity (`extreme` / `severe` / `warning` / `watch` / `info`)
+- **headline**: Alert headline (e.g., "Severe Wind Warning")
+- **severity**: Same as state — exposed as an attribute for template access
 - **urgency**: CAP urgency (immediate, expected, future, unknown)
 - **certainty**: CAP certainty (observed, likely, possible, unlikely, unknown)
 - **issued**: When the alert was issued (ISO 8601 timestamp)
