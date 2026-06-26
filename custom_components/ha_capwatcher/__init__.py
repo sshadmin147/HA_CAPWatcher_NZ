@@ -36,7 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     poll_seconds: int = POLLING_PRESETS.get(polling_key, 60)
 
     # Load default feeds and merge with any custom feeds stored in options
-    all_feeds = load_default_feeds()
+    all_feeds = await hass.async_add_executor_job(load_default_feeds)
     custom_feeds = entry.options.get("custom_feeds", [])
     merged = merge_feeds(all_feeds, custom_feeds)
 

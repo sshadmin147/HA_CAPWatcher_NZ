@@ -128,6 +128,28 @@ def callback(func):
     return func
 
 
+class SelectSelectorConfig:
+    """Minimal stub for homeassistant.helpers.selector.SelectSelectorConfig."""
+    def __init__(self, options=None, multiple=False, **kwargs):
+        self.options = options or []
+        self.multiple = multiple
+
+
+class SelectSelector:
+    """Minimal stub for homeassistant.helpers.selector.SelectSelector."""
+    def __init__(self, config: SelectSelectorConfig):
+        self.config = config
+
+    def __call__(self, value):
+        return value
+
+
+class _HassStub:
+    """Minimal hass stub used inside config flow tests."""
+    async def async_add_executor_job(self, fn, *args):
+        return fn(*args)
+
+
 # ---------------------------------------------------------------------------
 # Register all stubs before any component module is imported
 # ---------------------------------------------------------------------------
@@ -157,6 +179,10 @@ def _register_stubs() -> None:
     ha_components = types.ModuleType("homeassistant.components")
     ha_components_sensor = types.ModuleType("homeassistant.components.sensor")
 
+    ha_selector = types.ModuleType("homeassistant.helpers.selector")
+    ha_selector.SelectSelector = SelectSelector
+    ha_selector.SelectSelectorConfig = SelectSelectorConfig
+
     for name, mod in [
         ("homeassistant", ha),
         ("homeassistant.core", ha_core),
@@ -164,11 +190,16 @@ def _register_stubs() -> None:
         ("homeassistant.helpers.entity", ha_helpers_entity),
         ("homeassistant.helpers.entity_platform", ha_helpers_ep),
         ("homeassistant.helpers.update_coordinator", ha_coord),
+        ("homeassistant.helpers.selector", ha_selector),
         ("homeassistant.config_entries", ha_config_entries),
         ("homeassistant.components", ha_components),
         ("homeassistant.components.sensor", ha_components_sensor),
     ]:
         sys.modules.setdefault(name, mod)
+
+    # Patch flow stubs with a hass stub so async_add_executor_job works in tests
+    ConfigFlow.hass = _HassStub()
+    OptionsFlow.hass = _HassStub()
 
 
 _register_stubs()

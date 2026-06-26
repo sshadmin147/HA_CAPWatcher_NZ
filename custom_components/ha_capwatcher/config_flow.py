@@ -6,6 +6,7 @@ from typing import Any, TYPE_CHECKING
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.helpers.selector import SelectSelector, SelectSelectorConfig
 
 from .const import (
     CONF_FEEDS,
@@ -21,17 +22,33 @@ if TYPE_CHECKING:
 
 PLATFORMS = ["sensor"]
 
+_INTERVAL_LABELS = {
+    "15_seconds": "15 seconds",
+    "30_seconds": "30 seconds",
+    "45_seconds": "45 seconds",
+    "1_minute": "1 minute",
+    "2_minutes": "2 minutes",
+    "5_minutes": "5 minutes",
+}
+
 
 def _feed_schema(all_feeds: list[dict], current_feeds: list[str], current_interval: str) -> vol.Schema:
     """Build the voluptuous schema for the feed selection form."""
-    valid_names = [f["name"] for f in all_feeds if validate_feed(f) == []]
+    feed_options = [
+        {"value": f["name"], "label": f.get("label", f["name"])}
+        for f in all_feeds
+        if validate_feed(f) == []
+    ]
+    interval_options = [
+        {"value": k, "label": _INTERVAL_LABELS.get(k, k)}
+        for k in POLLING_PRESETS
+    ]
     return vol.Schema({
-        vol.Required(CONF_FEEDS, default=current_feeds): vol.All(
-            [vol.In(valid_names)],
-            vol.Length(min=1, msg="Select at least one feed"),
+        vol.Required(CONF_FEEDS, default=current_feeds): SelectSelector(
+            SelectSelectorConfig(options=feed_options, multiple=True)
         ),
-        vol.Required(CONF_POLLING_INTERVAL, default=current_interval): vol.In(
-            list(POLLING_PRESETS.keys())
+        vol.Required(CONF_POLLING_INTERVAL, default=current_interval): SelectSelector(
+            SelectSelectorConfig(options=interval_options, multiple=False)
         ),
     })
 
@@ -45,7 +62,7 @@ class CAPWatcherConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> dict[str, Any]:
         errors: dict[str, str] = {}
-        all_feeds = load_default_feeds()
+        all_feeds = await self.hass.async_add_executor_job(load_default_feeds)
         default_enabled = [f["name"] for f in all_feeds if f.get("enabled")]
 
         if user_input is not None:
@@ -87,7 +104,7 @@ class CAPWatcherOptionsFlow(config_entries.OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> dict[str, Any]:
         errors: dict[str, str] = {}
-        all_feeds = load_default_feeds()
+        all_feeds = await self.hass.async_add_executor_job(load_default_feeds)
 
         current_feeds = (
             self._entry.options.get(CONF_FEEDS)
