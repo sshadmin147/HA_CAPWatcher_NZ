@@ -247,3 +247,65 @@ class TestParseCAPDocument:
         assert alert.source == "MetService"
         assert alert.category == "Met"
         assert alert.cap_url == "https://alerts.sshadmin.dev/cap/alerts/123456"
+
+    def test_cap12_moderate_maps_to_warning(self):
+        """CAP 1.2 Moderate (MetService Orange) must map to NZ-CAP 'warning'."""
+        cap = """<?xml version="1.0" encoding="UTF-8"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <info>
+    <urgency>Expected</urgency>
+    <severity>Moderate</severity>
+    <certainty>Likely</certainty>
+    <description>Heavy Rain Warning - Orange.</description>
+    <area><areaDesc>Canterbury</areaDesc></area>
+  </info>
+</alert>"""
+        alert = parse_cap_document(cap, _DUMMY_ENTRY, "test")
+        assert alert is not None
+        assert alert.severity == "warning"
+
+    def test_cap12_minor_maps_to_watch(self):
+        """CAP 1.2 Minor (MetService Yellow) must map to NZ-CAP 'watch'."""
+        cap = """<?xml version="1.0" encoding="UTF-8"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <info>
+    <urgency>Future</urgency>
+    <severity>Minor</severity>
+    <certainty>Possible</certainty>
+    <description>Strong Wind Watch - Yellow.</description>
+    <area><areaDesc>Wellington</areaDesc></area>
+  </info>
+</alert>"""
+        alert = parse_cap_document(cap, _DUMMY_ENTRY, "test")
+        assert alert is not None
+        assert alert.severity == "watch"
+
+    def test_cap12_unknown_maps_to_info(self):
+        """CAP 1.2 Unknown severity must map to NZ-CAP 'info'."""
+        cap = """<?xml version="1.0" encoding="UTF-8"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <info>
+    <urgency>Unknown</urgency>
+    <severity>Unknown</severity>
+    <certainty>Unknown</certainty>
+    <description>Informational alert.</description>
+    <area><areaDesc>New Zealand</areaDesc></area>
+  </info>
+</alert>"""
+        alert = parse_cap_document(cap, _DUMMY_ENTRY, "test")
+        assert alert is not None
+        assert alert.severity == "info"
+
+    def test_truly_unrecognized_severity_still_skipped(self):
+        """A value that's neither NZ-CAP nor CAP 1.2 must still be rejected."""
+        cap = """<?xml version="1.0" encoding="UTF-8"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <info>
+    <urgency>Expected</urgency>
+    <severity>SuperDangerous</severity>
+    <certainty>Likely</certainty>
+    <area><areaDesc>NZ</areaDesc></area>
+  </info>
+</alert>"""
+        alert = parse_cap_document(cap, _DUMMY_ENTRY, "test")
+        assert alert is None

@@ -7,32 +7,48 @@ from .const import SEVERITY_INFO, SEVERITY_WATCH, SEVERITY_WARNING, SEVERITY_SEV
 
 _LOGGER = logging.getLogger(__name__)
 
+# MetService publishes raw CAP 1.2 severity values; map them to the
+# NZ Standard Weather Alert Levels:
+#   CAP Minor    → Yellow Watch   (possible, not yet imminent)
+#   CAP Moderate → Orange Warning (imminent/occurring, take action)
+#   CAP Severe   → Red Warning    (already accepted as 'severe')
+#   CAP Extreme  → Red Warning    (already accepted as 'extreme'; NEMA use)
+_CAP12_TO_NZCAP: dict[str, str] = {
+    "moderate": SEVERITY_WARNING,  # Orange Warning
+    "minor": SEVERITY_WATCH,       # Yellow Watch
+    "unknown": SEVERITY_INFO,
+}
+
 
 def validate_severity(severity_value: Optional[str]) -> str:
     """
-    Validate and normalize severity value from CAP alert.
+    Validate and normalize a CAP severity value.
 
-    Args:
-        severity_value: Raw severity value from CAP feed
+    Accepts both NZ-CAP vocabulary (extreme/severe/warning/watch/info) and
+    standard CAP 1.2 vocabulary (Moderate/Minor/Unknown), mapping the latter
+    to their NZ-CAP equivalents.
 
     Returns:
-        Normalized severity string (extreme, severe, warning, watch, info)
+        Normalized NZ-CAP severity string.
 
     Raises:
-        ValueError: If severity is None/missing or unrecognized
+        ValueError: If severity is None/missing or unrecognized.
     """
     if not severity_value:
         raise ValueError("Missing mandatory CAP severity field")
 
     normalized = severity_value.lower().strip()
 
-    if normalized not in SEVERITIES:
-        raise ValueError(
-            f"Unknown severity value: '{severity_value}'. "
-            f"Expected one of: {', '.join(SEVERITIES)}"
-        )
+    if normalized in SEVERITIES:
+        return normalized
 
-    return normalized
+    if normalized in _CAP12_TO_NZCAP:
+        return _CAP12_TO_NZCAP[normalized]
+
+    raise ValueError(
+        f"Unknown severity value: '{severity_value}'. "
+        f"Expected one of: {', '.join(SEVERITIES)}"
+    )
 
 
 def get_severity_color(severity: str) -> dict:
