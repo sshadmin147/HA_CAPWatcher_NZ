@@ -64,6 +64,7 @@ BACKOFF_INTERVALS = [5, 10, 30, 120, 300]  # seconds: 5s, 10s, 30s, 2m, 5m
 
 # Attributes (all mandatory NZ-CAP fields)
 ATTR_SEVERITY = "severity"
+ATTR_HEADLINE = "headline"
 ATTR_URGENCY = "urgency"
 ATTR_CERTAINTY = "certainty"
 ATTR_ISSUED = "issued"
@@ -72,4 +73,8 @@ ATTR_EXPIRES = "expires"
 ATTR_AREA = "area"
 ATTR_DESCRIPTION = "description"
 ATTR_INSTRUCTIONS = "instructions"
+ATTR_CAP_URL = "cap_url"
+ATTR_SOURCE = "source"
+ATTR_CATEGORY = "category"
+ATTR_FEED_NAME = "feed_name"
 ATTR_GEOMETRY = "geometry_polygon"  # Stored separately to avoid attribute bloat
