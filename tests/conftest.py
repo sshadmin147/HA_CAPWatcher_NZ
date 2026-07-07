@@ -128,6 +128,26 @@ def callback(func):
     return func
 
 
+class _EntityRegistryStub:
+    """Minimal stub for homeassistant.helpers.entity_registry.EntityRegistry."""
+
+    def async_get_entity_id(self, domain: str, platform: str, unique_id: str):
+        return None
+
+    def async_remove(self, entity_id: str) -> None:
+        pass
+
+
+def entity_registry_async_get(hass):
+    """Minimal stub for homeassistant.helpers.entity_registry.async_get."""
+    return _EntityRegistryStub()
+
+
+def entity_registry_async_entries_for_config_entry(registry, config_entry_id: str):
+    """Minimal stub for homeassistant.helpers.entity_registry.async_entries_for_config_entry."""
+    return []
+
+
 class SelectSelectorConfig:
     """Minimal stub for homeassistant.helpers.selector.SelectSelectorConfig."""
     def __init__(self, options=None, multiple=False, **kwargs):
@@ -183,6 +203,10 @@ def _register_stubs() -> None:
     ha_selector.SelectSelector = SelectSelector
     ha_selector.SelectSelectorConfig = SelectSelectorConfig
 
+    ha_entity_registry = types.ModuleType("homeassistant.helpers.entity_registry")
+    ha_entity_registry.async_get = entity_registry_async_get
+    ha_entity_registry.async_entries_for_config_entry = entity_registry_async_entries_for_config_entry
+
     for name, mod in [
         ("homeassistant", ha),
         ("homeassistant.core", ha_core),
@@ -191,6 +215,7 @@ def _register_stubs() -> None:
         ("homeassistant.helpers.entity_platform", ha_helpers_ep),
         ("homeassistant.helpers.update_coordinator", ha_coord),
         ("homeassistant.helpers.selector", ha_selector),
+        ("homeassistant.helpers.entity_registry", ha_entity_registry),
         ("homeassistant.config_entries", ha_config_entries),
         ("homeassistant.components", ha_components),
         ("homeassistant.components.sensor", ha_components_sensor),

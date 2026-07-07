@@ -6,6 +6,7 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.core import callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -91,9 +92,21 @@ def _setup_feed_entities(
         if new_entities:
             async_add_entities(new_entities)
 
-        for alert_id in known_ids - current_ids:
-            entity = _tracked.pop(alert_id)
-            hass.async_create_task(entity.async_remove())
+        if evicted_ids := known_ids - current_ids:
+            registry = er.async_get(hass)
+            for alert_id in evicted_ids:
+                entity = _tracked.pop(alert_id)
+                if registry_entity_id := registry.async_get_entity_id(
+                    "sensor", DOMAIN, entity.unique_id
+                ):
+                    # Removing the registry entry (rather than calling
+                    # entity.async_remove() directly) cascades into a full,
+                    # residue-free teardown. Otherwise the entity has a
+                    # non-disabled registry entry and HA only marks it
+                    # 'unavailable' forever instead of deleting it.
+                    registry.async_remove(registry_entity_id)
+                else:
+                    hass.async_create_task(entity.async_remove())
 
     entry.async_on_unload(coordinator.async_add_listener(_handle_update))
     _handle_update()

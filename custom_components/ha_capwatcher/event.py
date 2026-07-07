@@ -91,6 +91,7 @@ class CAPAlertEventEntity(EventEntity):
                 "alert_id": alert_id,
                 "cap_url": alert.cap_url,
             })
+            self.async_write_ha_state()
             _LOGGER.debug(
                 "[%s] Fired alert_new: %s (%s)",
                 self._coordinator.feed_name,
@@ -103,6 +104,7 @@ class CAPAlertEventEntity(EventEntity):
                 "feed": self._coordinator.feed_name,
                 "alert_id": alert_id,
             })
+            self.async_write_ha_state()
             _LOGGER.debug(
                 "[%s] Fired alert_expired: %s",
                 self._coordinator.feed_name,
@@ -110,4 +112,3 @@ class CAPAlertEventEntity(EventEntity):
             )
 
         self._known_ids = current_ids
-        self.async_write_ha_state()

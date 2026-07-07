@@ -6,6 +6,7 @@ import logging
 from typing import TYPE_CHECKING
 
 import aiohttp
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .const import CONF_FEEDS, CONF_POLLING_INTERVAL, DOMAIN, POLLING_PRESETS
@@ -71,8 +72,50 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "session": session,
     }
 
+    _cleanup_stale_alert_entities(hass, entry, coordinators)
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+def _cleanup_stale_alert_entities(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    coordinators: dict[str, CAPFeedCoordinator],
+) -> None:
+    """Purge leftover per-alert sensor registry entries from past sessions.
+
+    A per-alert sensor removes its own registry entry when its alert expires
+    (see sensor.py), but only for alerts that expire while this integration
+    is loaded. Alerts that already expired in an earlier session — including
+    everything from before this cleanup existed — are left stranded as
+    permanent 'unavailable' entities, so sweep them here on every setup.
+    """
+    registry = er.async_get(hass)
+    sensor_entries = {
+        reg_entry.unique_id: reg_entry.entity_id
+        for reg_entry in er.async_entries_for_config_entry(registry, entry.entry_id)
+        if reg_entry.domain == "sensor"
+    }
+
+    # Longest feed name first, so e.g. "region_auckland_enhanced" is matched
+    # before the shorter "region_auckland" for a unique_id that belongs to it.
+    feeds_longest_first = sorted(
+        coordinators.values(), key=lambda c: len(c.feed_name), reverse=True
+    )
+
+    for unique_id, entity_id in sensor_entries.items():
+        for coord in feeds_longest_first:
+            prefix = f"{DOMAIN}_{coord.feed_name}_"
+            if not unique_id.startswith(prefix):
+                continue
+            if coord.data is None:
+                # First refresh failed — can't confirm this feed's alerts,
+                # so don't risk deleting one that's still active.
+                break
+            if unique_id not in {f"{prefix}{aid}" for aid in coord.data.alerts}:
+                registry.async_remove(entity_id)
+            break
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
