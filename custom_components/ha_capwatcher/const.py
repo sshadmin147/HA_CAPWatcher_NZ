@@ -21,6 +21,21 @@ SEVERITIES = [
 # fail loudly and skip the alert. Do NOT infer or default to 'info'.
 SEVERITY_FALLBACK_BEHAVIOR = "fail_loudly"
 
+# NZ-CAP Urgency Levels (priority order)
+URGENCY_IMMEDIATE = "immediate"
+URGENCY_EXPECTED = "expected"
+URGENCY_FUTURE = "future"
+URGENCY_PAST = "past"
+URGENCY_UNKNOWN = "unknown"
+
+URGENCIES = [
+    URGENCY_IMMEDIATE,
+    URGENCY_EXPECTED,
+    URGENCY_FUTURE,
+    URGENCY_PAST,
+    URGENCY_UNKNOWN,
+]
+
 # NZ-CAP Color Mapping
 # These hex codes are standardized in the NZ-CAP spec and used across all sources
 # (MetService, NEMA, GeoNet via NZAlerts)

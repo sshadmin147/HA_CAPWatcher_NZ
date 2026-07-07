@@ -30,7 +30,7 @@ from .const import (
     SEVERITY_COLORS,
 )
 from .coordinator import CAPFeedCoordinator
-from .severity import get_highest_severity
+from .severity import get_highest_severity, get_highest_urgency
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -60,6 +60,7 @@ async def async_setup_entry(
     async_add_entities([
         CAPAlertCountSensor(entry.entry_id, coord_list),
         CAPHighestSeveritySensor(entry.entry_id, coord_list),
+        CAPHighestUrgencySensor(entry.entry_id, coord_list),
         CAPLatestHeadlineSensor(entry.entry_id, coord_list),
     ])
 
@@ -271,6 +272,25 @@ class CAPHighestSeveritySensor(_CAPAggregateEntity):
             "severity_color": colors.get("hex"),
             "severity_background": colors.get("background"),
         }
+
+
+class CAPHighestUrgencySensor(_CAPAggregateEntity):
+    """Highest urgency currently active across all configured feeds."""
+
+    _attr_icon = "mdi:clock-alert"
+
+    @property
+    def unique_id(self) -> str:
+        return f"{DOMAIN}_{self._entry_id}_highest_urgency"
+
+    @property
+    def name(self) -> str:
+        return "Highest Urgency"
+
+    @property
+    def state(self) -> str:
+        urgencies = [a.urgency for a in self._all_alerts()]
+        return get_highest_urgency(urgencies)
 
 
 class CAPLatestHeadlineSensor(_CAPAggregateEntity):

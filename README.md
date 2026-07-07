@@ -22,9 +22,10 @@ The **Common Alerting Protocol** is an international standard for distributing e
 - **Custom card** — HA-CAPWatcher Lovelace card coming in Stage 2
 
 ### Automation Support
-- Trigger automations when alerts appear (`severity: "extreme"`)
-- Sensor state for alert count, highest severity, latest headline
-- Build custom automations: siren alerts, emergency notifications, mode changes, etc.
+- **Event entities** — one per feed, selectable in the HA automation UI with no YAML required
+- Fires `alert_new` and `alert_expired` events with full alert data (severity, urgency, headline, area)
+- Aggregate sensors for alert count, highest severity, and highest urgency — ideal for conditions and dashboards
+- Build custom automations: push notifications, sirens, mode changes, and more
 
 ### Configuration
 - **Easy setup** — one config step in Home Assistant UI, select your region(s)
@@ -96,47 +97,154 @@ Or use the HA UI: **+ Add Card** → **HA-CAPWatcher Card** → select your feed
 
 The card displays alerts with NZ-CAP standard colors, severity badges, full descriptions, and affected area maps.
 
-### Automations
+---
 
-Get notified when an alert appears:
+## Automations
+
+HA-CAPWatcher is built for automations. Each configured feed gets a stable **event entity** that fires whenever an alert arrives or expires. You can build automations in the HA UI without any YAML.
+
+### Event entities (no YAML required)
+
+Each enabled feed creates one event entity:
+
+| Feed | Entity ID |
+|---|---|
+| All NZ | `event.official_all_nz_alert_events` |
+| Auckland Enhanced | `event.auckland_enhanced_with_earthquakes_alert_events` |
+| Wellington Region | `event.region_wellington_alert_events` |
+| *(and so on for each enabled feed)* | |
+
+**Setting up an automation in the UI:**
+
+1. Go to **Settings → Automations → Create Automation**
+2. Under **When**, add trigger → **Event received**
+3. Click **Add target** and select your feed's event entity (e.g. `region_auckland Alert Events`)
+4. Set **Event type** to `alert_new` (or `alert_expired`)
+5. Under **Then do**, add your action — a notification, a siren, a scene, etc.
+
+That's it. No YAML needed for the trigger.
+
+**Filtering by severity or urgency** — add an **And if** condition:
+
+| Goal | Condition template |
+|---|---|
+| Only extreme or severe | `{{ trigger.event.data.severity in ['extreme', 'severe'] }}` |
+| Only immediate urgency | `{{ trigger.event.data.urgency == 'immediate' }}` |
+| Only a specific area | `{{ 'Auckland' in trigger.event.data.area }}` |
+
+#### Event data fields
+
+Both `alert_new` and `alert_expired` events carry:
+
+| Field | Example | Description |
+|---|---|---|
+| `severity` | `severe` | NZ-CAP severity level |
+| `urgency` | `immediate` | CAP urgency level |
+| `headline` | `"Severe Wind Warning for Auckland"` | Alert headline |
+| `area` | `"Auckland City"` | Affected region |
+| `feed` | `region_auckland` | Which feed the alert came from |
+| `alert_id` | `urn:oid:2.49.0...` | Unique CAP alert identifier |
+| `cap_url` | `https://...` | Link to the full CAP document |
+
+> `alert_expired` only carries `feed` and `alert_id` — the alert data is no longer available.
+
+---
+
+### YAML automation examples
+
+**Push notification on any new alert:**
 
 ```yaml
 automation:
-  - alias: "Extreme Weather Alert"
+  - alias: "CAP - New alert notification"
     trigger:
-      platform: state
-      entity_id: sensor.cap_alerts_nz_auckland_*
-      attribute: severity
-      to: "extreme"
-    action:
-      service: notify.pushover
-      data:
-        message: "🚨 {{ states('sensor.cap_alerts_nz_auckland_latest_headline') }}"
+      - platform: event
+        event_type: ha_capwatcher_alert_new
+        # (leave event_type blank here — it's the HA event bus event,
+        #  use the event entity approach above for GUI-based filtering)
 ```
 
-Siren when civil defence alert:
+Prefer the event entity approach above. These YAML examples use the aggregate sensors, which are simpler for state-based conditions.
+
+**Notify when highest severity reaches extreme or severe:**
 
 ```yaml
 automation:
-  - alias: "NEMA Alert Siren"
+  - alias: "CAP - Severe or worse alert"
     trigger:
-      platform: template
-      value_template: "{{ states('sensor.cap_alerts_nz_auckland_highest_severity') == 'extreme' }}"
+      - platform: state
+        entity_id: sensor.highest_severity
+        to:
+          - "extreme"
+          - "severe"
     action:
-      service: switch.turn_on
-      target:
-        entity_id: switch.sirens
+      - service: notify.mobile_app_your_phone
+        data:
+          title: "NZ Weather Alert — {{ trigger.to_state.state | title }}"
+          message: "{{ states('sensor.latest_headline') }}"
 ```
 
-### Helper Sensors
+**Trigger when urgency becomes immediate:**
 
-Three aggregate entities are created per config entry, spanning all configured feeds:
+```yaml
+automation:
+  - alias: "CAP - Immediate urgency alert"
+    trigger:
+      - platform: state
+        entity_id: sensor.highest_urgency
+        to: "immediate"
+    action:
+      - service: notify.mobile_app_your_phone
+        data:
+          title: "Immediate Action Required"
+          message: "{{ states('sensor.latest_headline') }}"
+```
 
-- `sensor.ha_capwatcher_<entry>_alert_count` — number of active alerts (e.g. `3`)
-- `sensor.ha_capwatcher_<entry>_highest_severity` — worst severity across all feeds (`extreme` / `severe` / `warning` / `watch` / `info` / `none`)
-- `sensor.ha_capwatcher_<entry>_latest_headline` — headline of the highest-priority active alert
+**Turn on a siren for extreme alerts:**
 
-Use these in automations or dashboard templates.
+```yaml
+automation:
+  - alias: "CAP - Extreme alert siren"
+    trigger:
+      - platform: state
+        entity_id: sensor.highest_severity
+        to: "extreme"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.siren
+```
+
+**Alert count goes from zero to something (new alert just arrived):**
+
+```yaml
+automation:
+  - alias: "CAP - First alert of the day"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.alert_count
+        above: 0
+        from: "0"
+    action:
+      - service: notify.mobile_app_your_phone
+        data:
+          message: "New active alert: {{ states('sensor.latest_headline') }}"
+```
+
+---
+
+### Aggregate sensors
+
+Four aggregate sensors are created per integration entry, spanning all enabled feeds. Use these in conditions, dashboards, and state-based triggers.
+
+| Sensor | State values | Description |
+|---|---|---|
+| `sensor.alert_count` | integer | Total active alerts across all feeds |
+| `sensor.highest_severity` | `extreme` / `severe` / `warning` / `watch` / `info` / `none` | Worst severity currently active |
+| `sensor.highest_urgency` | `immediate` / `expected` / `future` / `past` / `unknown` / `none` | Most time-critical urgency currently active |
+| `sensor.latest_headline` | string | Headline of the highest-priority active alert |
+
+> Entity IDs shown above are the defaults. HA may append a suffix if names conflict — use the entity picker in the UI to find your exact IDs.
 
 ## Alert Details
 
@@ -145,7 +253,7 @@ Each alert entity contains:
 - **state**: NZ-CAP severity (`extreme` / `severe` / `warning` / `watch` / `info`)
 - **headline**: Alert headline (e.g., "Severe Wind Warning")
 - **severity**: Same as state — exposed as an attribute for template access
-- **urgency**: CAP urgency (immediate, expected, future, unknown)
+- **urgency**: CAP urgency (`immediate` / `expected` / `future` / `past` / `unknown`)
 - **certainty**: CAP certainty (observed, likely, possible, unlikely, unknown)
 - **issued**: When the alert was issued (ISO 8601 timestamp)
 - **onset**: When the alert becomes active
@@ -162,7 +270,8 @@ Each alert entity contains:
 - Standard CAP compliance
 - Rate limit handling
 - State persistence on HA restart
-- Helper entities for automations
+- Aggregate sensors (alert count, highest severity, highest urgency, latest headline)
+- Event entities per feed — GUI-driven automations with no YAML required
 - Config flow with custom feed support
 
 ### Stage 2 (Planned)

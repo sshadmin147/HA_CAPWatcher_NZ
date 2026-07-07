@@ -3,7 +3,7 @@
 import logging
 from typing import Optional
 
-from .const import SEVERITY_INFO, SEVERITY_WATCH, SEVERITY_WARNING, SEVERITY_SEVERE, SEVERITY_EXTREME, SEVERITIES
+from .const import SEVERITY_INFO, SEVERITY_WATCH, SEVERITY_WARNING, SEVERITY_SEVERE, SEVERITY_EXTREME, SEVERITIES, URGENCIES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,5 +87,22 @@ def get_highest_severity(severities: list[str]) -> str:
     for severity in SEVERITIES:
         if severity in severities:
             return severity
+
+    return "none"
+
+
+def get_highest_urgency(urgencies: list[str]) -> str:
+    """
+    Determine the highest (most time-critical) urgency from a list.
+
+    Returns:
+        Highest urgency, or 'none' if list is empty.
+    """
+    if not urgencies:
+        return "none"
+
+    for urgency in URGENCIES:
+        if urgency in urgencies:
+            return urgency
 
     return "none"
