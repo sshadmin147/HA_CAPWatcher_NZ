@@ -1,7 +1,7 @@
 {
   "domain": "ha_capwatcher",
   "name": "HA-CAPWatcher NZ",
-  "version": "1.02a",
+  "version": "1.1rc1",
   "config_flow": true,
   "documentation": "https://github.com/sshadmin147/HA_CAPWatcher_NZ",
   "issue_tracker": "https://github.com/sshadmin147/HA_CAPWatcher_NZ/issues",
